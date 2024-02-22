@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shoot or Don't Shoot</title>
+</head>
+<body>
+    <h1>Shoot or Don't Shoot</h1>
+    <p id="status">Waiting for players...</p>
+    <button onclick="chooseAction('shoot')">Shoot</button>
+    <button onclick="chooseAction('dontShoot')">Don't Shoot</button>
+    
+    <script>
+        const ws = new WebSocket('wss://echo.websocket.org');
+        let playerNumber = null;
+
+        ws.onopen = () => {
+            console.log('Connected to WebSocket server');
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.playerNumber !== playerNumber) {
+                document.getElementById('status').textContent = `Player ${data.playerNumber} chose: ${data.action}`;
+            }
+        };
+
+        function chooseAction(action) {
+            if (playerNumber === null) {
+                alert('Wait for another player to join.');
+                return;
+            }
+
+            ws.send(JSON.stringify({ playerNumber, action }));
+            document.getElementById('status').textContent = `You chose: ${action}`;
+        }
+
+        function assignPlayerNumber(number) {
+            playerNumber = number;
+            document.getElementById('status').textContent = 'Choose "Shoot" or "Don\'t Shoot".';
+        }
+
+        setTimeout(() => {
+            assignPlayerNumber(1); // Assume current player is Player 1
+        }, 1000); // Wait for 1 second (simulating waiting for another player)
+    </script>
+</body>
+</html>
